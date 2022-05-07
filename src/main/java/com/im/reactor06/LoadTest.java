@@ -50,6 +50,4 @@ public class LoadTest {
         main.stop();
         log.info("Total: {}", main.getTotalTimeSeconds());
     }
-
-
 }
