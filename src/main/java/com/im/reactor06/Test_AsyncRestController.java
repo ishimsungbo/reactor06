@@ -23,7 +23,7 @@ import org.springframework.web.context.request.async.DeferredResult;
 @EnableAsync
 public class Test_AsyncRestController {
 
-        @Autowired MyService myService;
+        @Autowired MyService2 myService;
 
         RestTemplate rt = new RestTemplate();
         AsyncRestTemplate art = new AsyncRestTemplate();
@@ -147,12 +147,13 @@ public class Test_AsyncRestController {
     /**
      * 7. 리팩터링 및 함수형 스타일로 바꾸어 본다.
      * 자바 8 이상으로는...어떻게?
+     * Solution
+     * 클래스를 하나 만들어서 아래를 분리한다. 중첩이 아닌 스트림식 구조로 변경 ==> CallBack Hell 구조인 상태, 에러의 중복 구조
      */
-    @GetMapping("/rest")
+    @GetMapping("/rest5")
     public DeferredResult<String> restNetty05(int idx) {
 
         ListenableFuture<ResponseEntity<String>> f1 = nrt.getForEntity("http://localhost:8081/service?req={req}", String.class, "hello" + idx);
-
         DeferredResult<String> dr = new DeferredResult<>();
 
         f1.addCallback(s->{
@@ -168,7 +169,6 @@ public class Test_AsyncRestController {
                 }, e ->{
                     dr.setErrorResult(e.getMessage());
                 });
-
             }, e->{
                 dr.setErrorResult(e.getMessage());
             });
@@ -185,12 +185,13 @@ public class Test_AsyncRestController {
      * --------------------------------------------------------------------------------------- **/
 
     @Service
-    public static class MyService {
+    public static class MyService2 {
         @Async
         public ListenableFuture<String> work(String req){
             return new AsyncResult<>(req + "/asyncwork");
         }
     }
+
 
     @Bean
     public ThreadPoolTaskExecutor myTreadPool(){
