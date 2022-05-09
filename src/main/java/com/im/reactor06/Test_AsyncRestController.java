@@ -105,20 +105,33 @@ public class Test_AsyncRestController {
         return dr;
     }
 
-    @GetMapping("/rest")
+
+    /**
+     * 6. 결과 값을 가공 후, 또 다시 다른 서비스를 호출 ==> 순차적 API
+     * 회원가입, 이메일발송, 등등
+     * Add 스프링의 서비스를 달아보자
+     */
+    @GetMapping("/rest4")
     public DeferredResult<String> restNetty04(int idx) {
 
         ListenableFuture<ResponseEntity<String>> f1 = nrt.getForEntity("http://localhost:8081/service?req={req}", String.class, "hello" + idx);
 
         DeferredResult<String> dr = new DeferredResult<>();
 
-        //CallBack구조로 만든다. 콜백에서는 비동기작업이기에 예외는  DeferredResult 내부객체를 사용한다
         f1.addCallback(s->{
+            log.info("S1 CallBack");
             //중첩으로 하면 됨.
             ListenableFuture<ResponseEntity<String>> f2 = nrt.getForEntity("http://localhost:8081/service2?req={req}", String.class, s.getBody());
             f2.addCallback(s2->{
-                dr.setResult(s2.getBody());
-                //ListenableFuture<String>
+                log.info("S2 CallBack");
+                   ListenableFuture<String> f3 = myService.work(s2.getBody());
+                   f3.addCallback( s3 -> {
+                       log.info("S3 CallBack");
+                       dr.setResult(s3);
+                   }, e ->{
+                       dr.setErrorResult(e.getMessage());
+                   });
+
             }, e->{
                 dr.setErrorResult(e.getMessage());
             });
@@ -129,6 +142,47 @@ public class Test_AsyncRestController {
 
         return dr;
     }
+
+
+    /**
+     * 7. 리팩터링 및 함수형 스타일로 바꾸어 본다.
+     * 자바 8 이상으로는...어떻게?
+     */
+    @GetMapping("/rest")
+    public DeferredResult<String> restNetty05(int idx) {
+
+        ListenableFuture<ResponseEntity<String>> f1 = nrt.getForEntity("http://localhost:8081/service?req={req}", String.class, "hello" + idx);
+
+        DeferredResult<String> dr = new DeferredResult<>();
+
+        f1.addCallback(s->{
+            log.info("S1 CallBack");
+            //중첩으로 하면 됨.
+            ListenableFuture<ResponseEntity<String>> f2 = nrt.getForEntity("http://localhost:8081/service2?req={req}", String.class, s.getBody());
+            f2.addCallback(s2->{
+                log.info("S2 CallBack");
+                ListenableFuture<String> f3 = myService.work(s2.getBody());
+                f3.addCallback( s3 -> {
+                    log.info("S3 CallBack");
+                    dr.setResult(s3);
+                }, e ->{
+                    dr.setErrorResult(e.getMessage());
+                });
+
+            }, e->{
+                dr.setErrorResult(e.getMessage());
+            });
+
+        }, e->{
+            dr.setErrorResult(e.getMessage());
+        });
+
+        return dr;
+    }
+
+
+    /** -------------------------------------------------------------------------------------
+     * --------------------------------------------------------------------------------------- **/
 
     @Service
     public static class MyService {
