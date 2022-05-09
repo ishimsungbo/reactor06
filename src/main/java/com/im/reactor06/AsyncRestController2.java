@@ -38,6 +38,7 @@ public class AsyncRestController2 {
         Completion
                 .from(rt.getForEntity(URL1, String.class, "hello" + idx))
                 .andApply(s->  rt.getForEntity(URL2, String.class, s.getBody()))  // 받고 리턴이 필요하다.
+                .andError(e -> dr.setErrorResult(e.toString()))
                 .andAccept(s -> dr.setResult(s.getBody()));   //위의 결과를 아래로 넘김  받은 값을 소비한다는 개념. 수행하고 끝낸다. Consumer<T>
 
         return dr;
@@ -70,17 +71,42 @@ public class AsyncRestController2 {
         }
     }
 
+    public static class ErrorCompletion extends Completion {
+
+        Consumer<Throwable> econ;
+
+        public ErrorCompletion(Consumer<Throwable> econ) {
+            this.econ = econ;
+        }
+
+        @Override
+        void run(ResponseEntity<String> value) {
+            if(next != null) next.run(value);
+        }
+
+        @Override
+        void error(Throwable e) {
+            super.error(e);
+        }
+    }
+
     public static class Completion{
 
         Completion next;
 
         public void andAccept(Consumer<ResponseEntity<String>> con){
-            Completion c = new AsyncRestController2.AcceptCompletion(con);
+            Completion c = new AcceptCompletion(con);
             this.next = c;
         }
 
+        public Completion andError(Consumer<Throwable> econ){
+            Completion c = new ErrorCompletion(econ);
+            this.next = c;
+            return c;
+        }
+
         public Completion andApply(Function<ResponseEntity<String>,ListenableFuture<ResponseEntity<String>>> fn){
-            Completion c = new AsyncRestController2.ApplyCompletion(fn);
+            Completion c = new ApplyCompletion(fn);
             this.next = c;
             return c;
         }
@@ -100,11 +126,10 @@ public class AsyncRestController2 {
         }
 
         void run(ResponseEntity<String> value) {
-
         }
 
         void error(Throwable e) {
-
+            if(next != null ) next.error(e);
         }
     }
 }
