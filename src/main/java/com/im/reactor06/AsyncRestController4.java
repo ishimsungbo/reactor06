@@ -4,7 +4,6 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
-import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.Netty4ClientHttpRequestFactory;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
@@ -24,7 +23,7 @@ import java.util.function.Function;
 @RestController
 @EnableAsync
 @Deprecated
-public class AsyncRestController3 {
+public class AsyncRestController4 {
 
     private final String URL1 = "http://localhost:8081/service?req={req}";
     private final String URL2 = "http://localhost:8081/service2?req={req}";
@@ -42,7 +41,7 @@ public class AsyncRestController3 {
         return te;
     }
 
-    @GetMapping("/rest_last")
+    @GetMapping("/rest")
     public DeferredResult<String> restNetty(int idx) {
 
         DeferredResult<String> dr = new DeferredResult<>();

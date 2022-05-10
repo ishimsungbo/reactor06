@@ -20,13 +20,13 @@ public class Generics1 {
 
     public static void main(String[] args) {
         //1. 숫자 비교인데...
-        //Integer[] arr = new Integer[] {1,2,3,4,5,6,7,8,9,10};
-        //System.out.println(countGreaterrThan(arr,4));
+        Integer[] arr1 = new Integer[] {1,2,3,4,5,6,7,8,9,10};
+        System.out.println("나는 숫자 : "+countGreaterrThan(arr1,4));
 
         //문자로 만들고 싶어짐.
         String[] arr = new String[] {"a","b","c","d","e"};
 
-        System.out.println(countGreaterrThan(arr,"a"));
+        System.out.println("나는 문자 : "+countGreaterrThan(arr,"a"));
     }
 
     static <T extends Integer & List> void print(T t){};  //멀티플 타입 제한이 가능함.
