@@ -17,8 +17,8 @@ public class RemoteService {
         public String service(String req) throws InterruptedException{
             log.info(" Call Service1 " + req);
             Thread.sleep(1000);
-            throw  new RuntimeException();
-            //return req + "/service1";
+            //throw  new RuntimeException();
+            return req + "/service1";
         }
 
 

@@ -191,17 +191,6 @@ public class Test_AsyncRestController {
             return new AsyncResult<>(req + "/asyncwork");
         }
     }
-
-
-    @Bean
-    public ThreadPoolTaskExecutor myTreadPool(){
-        ThreadPoolTaskExecutor te = new ThreadPoolTaskExecutor();
-        te.setCorePoolSize(1);
-        te.setMaxPoolSize(1);
-        te.initialize();
-        return te;
-    }
-
 }
 
 
